@@ -24,6 +24,7 @@ public class SellerDaoJDBC implements SellerDao{
 		this.conn = conn;
 	}
 
+	
 	@Override
 	public void insert(Seller obj) {
 		PreparedStatement preprdStatement = null;
@@ -68,18 +69,59 @@ public class SellerDaoJDBC implements SellerDao{
 		
 	}
 
+	
 	@Override
 	public void update(Seller obj) {
-		// TODO Auto-generated method stub
+PreparedStatement preprdStatement = null;
+		
+		try {
+			preprdStatement = conn.prepareStatement(
+					"UPDATE seller " 
+					+ "SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? " 
+					+ "WHERE Id = ? ",
+					Statement.RETURN_GENERATED_KEYS);
+			
+			preprdStatement.setString(1, obj.getName());
+			preprdStatement.setString(2, obj.getEmail());
+			preprdStatement.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+			preprdStatement.setDouble(4,  obj.getBaseSalary());
+			preprdStatement.setInt(5, obj.getDepartment().getId());
+			preprdStatement.setInt(6, obj.getId());
+			
+			int rowsAffected = preprdStatement.executeUpdate();
+			
+			if(rowsAffected > 0) {
+				ResultSet rs = preprdStatement.getGeneratedKeys();
+				if( rs.next()) {
+					int id = rs.getInt(1);
+					obj.setId(id);
+				}
+				DB.closeResultSet(rs);
+			}
+			else {
+				throw new DbException("Unexpected error! No rows affected!");
+			}
+			
+			
+			
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(preprdStatement);
+		}
 		
 	}
 
+	
 	@Override
 	public void deleteById(Integer id) {
 		// TODO Auto-generated method stub
 		
 	}
 
+	
 	@Override
 	public Seller findById(Integer id) {
 		PreparedStatement prerdStatement = null;
